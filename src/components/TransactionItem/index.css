@@ -1,0 +1,19 @@
+.item-bg {
+  display: flex;
+}
+
+.para4 {
+  font-family: 'Roboto';
+  color: #1e293b;
+  margin: 10px;
+  margin-right: 20px;
+}
+.delete-img {
+  height: 25px;
+  width: 25px;
+}
+.button2 {
+  border: none;
+  background-color: transparent;
+  margin-left: 75px;
+}
