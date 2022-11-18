@@ -18,12 +18,9 @@ const transactionTypeOptions = [
 
 class MoneyManager extends Component {
   state = {
-    balance: 0,
-    income: 0,
-    expenses: 0,
     title: '',
     amount: '',
-    type: transactionTypeOptions[0].displayText,
+    optionId: transactionTypeOptions[0].optionId,
     historyList: [],
   }
 
@@ -36,64 +33,85 @@ class MoneyManager extends Component {
   }
 
   optionValue = event => {
-    this.setState({type: event.target.value})
+    this.setState({optionId: event.target.value})
   }
 
   submitValue = event => {
     event.preventDefault()
-    const {title, amount, type, historyList} = this.state
-    let {balance, income, expenses} = this.state
+    const {title, amount, optionId} = this.state
+
+    const forType = transactionTypeOptions.find(
+      each6 => each6.optionId === optionId,
+    )
+    const {displayText} = forType
 
     const newList = {
       title,
       amount,
-      type,
+      type: displayText,
       id: uuidv4(),
     }
 
-    if (type === 'Income') {
-      income = parseInt(amount) + income
-      balance += parseInt(amount)
-    } else {
-      expenses = parseInt(amount) + expenses
-      balance -= parseInt(amount)
-    }
-
-    this.setState({
-      historyList: [...historyList, newList],
-      expenses,
-      income,
-      balance,
+    this.setState(prev => ({
+      historyList: [...prev.historyList, newList],
       amount: '',
       title: '',
-    })
+      optionId: transactionTypeOptions[0].optionId,
+    }))
   }
 
   getId = id => {
     const {historyList} = this.state
-    let {income, balance, expenses} = this.state
     const filteredList = historyList.filter(each2 => each2.id !== id)
-    const updateMoney = historyList.filter(each3 => each3.id === id)
-    if (updateMoney[0].type === 'Income') {
-      income -= parseInt(updateMoney[0].amount)
-      balance -= parseInt(updateMoney[0].amount)
-    } else {
-      expenses -= parseInt(updateMoney[0].amount)
-      balance += parseInt(updateMoney[0].amount)
-    }
-    this.setState({historyList: filteredList, income, balance, expenses})
+    this.setState({historyList: filteredList})
+  }
+
+  getExpenses = () => {
+    const {historyList} = this.state
+    let expenses = 0
+    historyList.forEach(each4 => {
+      if (transactionTypeOptions[1].displayText === each4.type) {
+        expenses += parseInt(each4.amount)
+      }
+    })
+    return expenses
+  }
+
+  getIncome = () => {
+    const {historyList} = this.state
+    let income = 0
+    historyList.forEach(each3 => {
+      if (transactionTypeOptions[0].displayText === each3.type) {
+        income += parseInt(each3.amount)
+      }
+    })
+    return income
+  }
+
+  getBalance = () => {
+    const {historyList} = this.state
+    let balance = 0
+    let income = 0
+    let expenses = 0
+    historyList.forEach(each5 => {
+      if (each5.type === transactionTypeOptions[0].displayText) {
+        income += parseInt(each5.amount)
+      } else {
+        expenses += parseInt(each5.amount)
+      }
+    })
+    balance = income - expenses
+
+    return balance
   }
 
   render() {
-    const {
-      balance,
-      income,
-      expenses,
-      historyList,
-      title,
-      amount,
-      type,
-    } = this.state
+    const {historyList, title, amount, optionId} = this.state
+
+    const income = this.getIncome()
+    const expenses = this.getExpenses()
+    const balance = this.getBalance()
+
     return (
       <div className="money-bg">
         <div className="head-card">
@@ -135,10 +153,10 @@ class MoneyManager extends Component {
               <select
                 className="inputt"
                 onChange={this.optionValue}
-                value={type}
+                value={optionId}
               >
                 {transactionTypeOptions.map(eachItem => (
-                  <option value={eachItem.displayText} key={eachItem.optionId}>
+                  <option value={eachItem.optionId} key={eachItem.optionId}>
                     {eachItem.displayText}
                   </option>
                 ))}
@@ -150,11 +168,11 @@ class MoneyManager extends Component {
           </div>
           <div className="add-t">
             <h2 className="para2">History</h2>
-            <div className="history-con">
+            <li className="history-con">
               <p className="para3">Title</p>
               <p className="para3">Amount</p>
               <p className="para3">Type</p>
-            </div>
+            </li>
             <ul className="history-con2">
               {historyList.map(each1 => (
                 <TransactionItem
